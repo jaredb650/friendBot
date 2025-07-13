@@ -6,15 +6,17 @@ let isInitialized = false;
 
 const getDatabase = () => {
   if (!pool) {
-    // Validate environment variables
-    if (!process.env.POSTGRES_URL) {
+    // Validate environment variables - check both possible names
+    const postgresUrl = process.env.POSTGRES_URL || process.env.postgres_URL;
+    if (!postgresUrl) {
       console.error('❌ POSTGRES_URL environment variable is not set');
+      console.error('Available env vars:', Object.keys(process.env).filter(key => key.toLowerCase().includes('postgres')));
       throw new Error('Database configuration error: Missing POSTGRES_URL');
     }
 
     console.log('🗄️ Creating new PostgreSQL connection pool');
     pool = new Pool({
-      connectionString: process.env.POSTGRES_URL,
+      connectionString: postgresUrl,
       ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
     });
 
