@@ -30,5 +30,9 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`🚀 Server running on port ${PORT}`);
+  console.log('🔑 Environment check:');
+  console.log('  - GEMINI_API_KEY:', !!process.env.GEMINI_API_KEY);
+  console.log('  - JWT_SECRET:', !!process.env.JWT_SECRET);
+  console.log('  - PORT:', process.env.PORT);
 });
