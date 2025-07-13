@@ -101,14 +101,38 @@ const ProductManager: React.FC = () => {
     setShowAddForm(true);
   };
 
-  const deleteProduct = async (id: number) => {
-    if (!window.confirm('Are you sure you want to delete this product?')) return;
+  const toggleProductStatus = async (product: Product) => {
+    const newStatus = !product.is_active;
+    const action = newStatus ? 'activated' : 'deactivated';
+    
+    try {
+      await axios.put(`/api/admin/products/${product.id}`, {
+        name: product.name,
+        description: product.description,
+        payPerMention: product.pay_per_mention,
+        isActive: newStatus
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setMessage(`Product campaign ${action} successfully!`);
+      setIsSuccess(true);
+      fetchProducts();
+    } catch (error) {
+      setMessage(`Failed to ${newStatus ? 'activate' : 'deactivate'} product campaign.`);
+      setIsSuccess(false);
+    }
+
+    setTimeout(() => setMessage(''), 3000);
+  };
+
+  const deleteProduct = async (id: number, productName: string) => {
+    if (!window.confirm(`Are you sure you want to PERMANENTLY DELETE "${productName}" and ALL its analytics data? This action cannot be undone.`)) return;
 
     try {
       await axios.delete(`/api/admin/products/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setMessage('Product deleted successfully!');
+      setMessage('Product and analytics data deleted successfully!');
       setIsSuccess(true);
       fetchProducts();
     } catch (error) {
@@ -277,8 +301,14 @@ const ProductManager: React.FC = () => {
                   <button onClick={() => editProduct(product)} className="edit-btn">
                     Edit
                   </button>
-                  <button onClick={() => deleteProduct(product.id)} className="delete-btn">
-                    Delete
+                  <button 
+                    onClick={() => toggleProductStatus(product)} 
+                    className={product.is_active ? "deactivate-btn" : "activate-btn"}
+                  >
+                    {product.is_active ? '⏸️ Deactivate Campaign' : '▶️ Activate Campaign'}
+                  </button>
+                  <button onClick={() => deleteProduct(product.id, product.name)} className="delete-btn">
+                    🗑️ Delete Product + Analytics
                   </button>
                 </div>
               </div>

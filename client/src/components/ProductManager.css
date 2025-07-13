@@ -240,7 +240,8 @@
 
 .product-card .product-actions {
   display: flex;
-  gap: 10px;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 .edit-btn {
@@ -271,6 +272,36 @@
 
 .delete-btn:hover {
   background: #b91c1c;
+}
+
+.deactivate-btn {
+  background: #f59e0b;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.3s ease;
+}
+
+.deactivate-btn:hover {
+  background: #d97706;
+}
+
+.activate-btn {
+  background: #10b981;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.3s ease;
+}
+
+.activate-btn:hover {
+  background: #059669;
 }
 
 @media (max-width: 768px) {

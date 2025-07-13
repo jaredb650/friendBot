@@ -96,15 +96,32 @@ module.exports = async function handler(req, res) {
       res.status(500).json({ error: 'Database error' });
     }
   } else if (req.method === 'DELETE') {
-    // Delete product
+    // Delete product and ALL associated analytics data
     try {
-      await query('DELETE FROM products WHERE id = $1', [productId]);
+      console.log('🗑️ Starting complete product deletion for ID:', productId);
       
-      console.log('🛍️ Product deleted:', productId);
-      res.json({ success: true });
+      // First delete all ad_reads (analytics) associated with this product
+      const adReadsResult = await query('DELETE FROM ad_reads WHERE product_id = $1', [productId]);
+      console.log('🗑️ Deleted ad_reads:', adReadsResult.rowCount || 0);
+      
+      // Then delete the product itself
+      const productResult = await query('DELETE FROM products WHERE id = $1', [productId]);
+      console.log('🗑️ Deleted product:', productResult.rowCount || 0);
+      
+      if (productResult.rowCount === 0) {
+        return res.status(404).json({ error: 'Product not found' });
+      }
+      
+      console.log('✅ Complete product deletion successful for ID:', productId);
+      res.json({ 
+        success: true, 
+        message: 'Product and all analytics data deleted successfully',
+        deletedAdReads: adReadsResult.rowCount || 0
+      });
     } catch (error) {
-      console.error('❌ Error deleting product:', error);
-      res.status(500).json({ error: 'Database error' });
+      console.error('❌ Error during complete product deletion:', error);
+      console.error('❌ Product ID:', productId);
+      res.status(500).json({ error: 'Database error', details: error.message });
     }
   } else {
     res.status(405).json({ error: 'Method not allowed' });
