@@ -33,6 +33,51 @@ const Analytics: React.FC = () => {
   const [selectedTimeframe, setSelectedTimeframe] = useState('30days');
   const { token } = useAuth();
 
+  // Safely prepare chart data with error handling - MUST BE BEFORE ANY RETURNS
+  const preparedChartData = useMemo(() => {
+    try {
+      if (!dashboardData?.dailyEarnings || !Array.isArray(dashboardData.dailyEarnings)) {
+        console.log('📊 Frontend: No daily earnings data available');
+        return [];
+      }
+      
+      return dashboardData.dailyEarnings.map(item => {
+        try {
+          return {
+            ...item,
+            date: new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+            earnings: Number(item.earnings) || 0,
+            ad_reads: Number(item.ad_reads) || 0
+          };
+        } catch (itemError) {
+          console.error('❌ Frontend: Error processing daily earnings item:', itemError, item);
+          return {
+            date: 'Invalid',
+            earnings: 0,
+            ad_reads: 0
+          };
+        }
+      }).reverse();
+    } catch (error) {
+      console.error('❌ Frontend: Error preparing chart data:', error);
+      return [];
+    }
+  }, [dashboardData?.dailyEarnings]);
+
+  const productChartData = useMemo(() => {
+    try {
+      if (!dashboardData?.productStats || !Array.isArray(dashboardData.productStats)) {
+        console.log('📊 Frontend: No product stats data available');
+        return [];
+      }
+      
+      return dashboardData.productStats.filter(p => p && Number(p.mentions) > 0);
+    } catch (error) {
+      console.error('❌ Frontend: Error filtering product data:', error);
+      return [];
+    }
+  }, [dashboardData?.productStats]);
+
   useEffect(() => {
     fetchDashboardData();
   }, []);
@@ -100,51 +145,6 @@ const Analytics: React.FC = () => {
   }
 
   const COLORS = ['#6b46c1', '#10b981', '#f59e0b', '#ef4444', '#3b82f6', '#8b5cf6'];
-
-  // Safely prepare chart data with error handling
-  const preparedChartData = useMemo(() => {
-    try {
-      if (!dashboardData?.dailyEarnings || !Array.isArray(dashboardData.dailyEarnings)) {
-        console.log('📊 Frontend: No daily earnings data available');
-        return [];
-      }
-      
-      return dashboardData.dailyEarnings.map(item => {
-        try {
-          return {
-            ...item,
-            date: new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-            earnings: Number(item.earnings) || 0,
-            ad_reads: Number(item.ad_reads) || 0
-          };
-        } catch (itemError) {
-          console.error('❌ Frontend: Error processing daily earnings item:', itemError, item);
-          return {
-            date: 'Invalid',
-            earnings: 0,
-            ad_reads: 0
-          };
-        }
-      }).reverse();
-    } catch (error) {
-      console.error('❌ Frontend: Error preparing chart data:', error);
-      return [];
-    }
-  }, [dashboardData?.dailyEarnings]);
-
-  const productChartData = useMemo(() => {
-    try {
-      if (!dashboardData?.productStats || !Array.isArray(dashboardData.productStats)) {
-        console.log('📊 Frontend: No product stats data available');
-        return [];
-      }
-      
-      return dashboardData.productStats.filter(p => p && Number(p.mentions) > 0);
-    } catch (error) {
-      console.error('❌ Frontend: Error filtering product data:', error);
-      return [];
-    }
-  }, [dashboardData?.productStats]);
 
   return (
     <div className="admin-section">
