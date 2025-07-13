@@ -1,17 +1,19 @@
 const sqlite3 = require('sqlite3').verbose();
+const fs = require('fs');
 
-// Create database connection
-const dbPath = '/tmp/friendbot.db';
+// Create database connection - use in-memory database for consistency
+const dbPath = ':memory:'; // Use in-memory database instead of file-based
 let db = null;
+let isInitialized = false;
 
 const getDatabase = () => {
-  if (!db) {
-    console.log('🗄️ Creating new database connection at:', dbPath);
+  if (!db || !isInitialized) {
+    console.log('🗄️ Creating new in-memory database connection');
     db = new sqlite3.Database(dbPath, (err) => {
       if (err) {
         console.error('❌ Database connection error:', err);
       } else {
-        console.log('✅ Database connected successfully');
+        console.log('✅ In-memory database connected successfully');
       }
     });
     
@@ -78,7 +80,36 @@ const getDatabase = () => {
           console.log('📝 Character prompt already exists, count:', row.count);
         }
       });
+
+      // Insert sample products for testing
+      db.get("SELECT COUNT(*) as count FROM products", (err, row) => {
+        if (err) {
+          console.error('❌ Error checking products count:', err);
+        } else if (row.count === 0) {
+          console.log('🛍️ Inserting sample products');
+          const sampleProducts = [
+            ['Premium Friendship Plus™', 'Upgrade your friendship experience with 24/7 emotional support!', 29.99],
+            ['BestBuddy Energy Drink', 'Get energized like your best friend! Now with extra caffeine!', 4.99],
+            ['Conversation Starter Kit', 'Never run out of things to talk about with your bestie!', 19.99]
+          ];
+          
+          sampleProducts.forEach(([name, description, price]) => {
+            db.run('INSERT INTO products (name, description, pay_per_mention) VALUES (?, ?, ?)', 
+              [name, description, price], (insertErr) => {
+                if (insertErr) {
+                  console.error('❌ Error inserting sample product:', insertErr);
+                } else {
+                  console.log('✅ Sample product inserted:', name);
+                }
+              });
+          });
+        } else {
+          console.log('🛍️ Products already exist, count:', row.count);
+        }
+      });
     });
+    
+    isInitialized = true;
   }
   
   return db;
