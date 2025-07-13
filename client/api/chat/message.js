@@ -1,6 +1,6 @@
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const { v4: uuidv4 } = require('uuid');
-const { getDatabase } = require('../utils/database');
+const { query } = require('../utils/database');
 
 // Validate environment variables
 if (!process.env.GEMINI_API_KEY) {
@@ -53,39 +53,22 @@ module.exports = async function handler(req, res) {
   console.log('📥 Conversation ID:', conversationId);
   
   try {
-    const db = getDatabase();
     let convId = conversationId;
     if (!convId) {
       convId = uuidv4();
-      db.run('INSERT INTO conversations (id) VALUES (?)', [convId]);
+      await query('INSERT INTO conversations (id) VALUES ($1)', [convId]);
     } else {
-      db.run('UPDATE conversations SET last_activity = CURRENT_TIMESTAMP WHERE id = ?', [convId]);
+      await query('UPDATE conversations SET last_activity = CURRENT_TIMESTAMP WHERE id = $1', [convId]);
     }
 
-    const characterPrompt = await new Promise((resolve, reject) => {
-      db.get('SELECT prompt FROM character_prompt ORDER BY id DESC LIMIT 1', (err, row) => {
-        if (err) {
-          console.error('❌ Error fetching character prompt:', err);
-          reject(err);
-        } else {
-          console.log('📝 Character prompt found:', !!row?.prompt);
-          resolve(row?.prompt || 'You are a helpful assistant.');
-        }
-      });
-    });
+    const promptResult = await query('SELECT prompt FROM character_prompt ORDER BY id DESC LIMIT 1');
+    const characterPrompt = promptResult.rows[0]?.prompt || 'You are a helpful assistant.';
+    console.log('📝 Character prompt found:', !!characterPrompt);
 
-    const products = await new Promise((resolve, reject) => {
-      db.all('SELECT * FROM products WHERE is_active = 1', (err, rows) => {
-        if (err) {
-          console.error('❌ Error fetching products:', err);
-          reject(err);
-        } else {
-          console.log('🛍️ Products found:', rows?.length || 0);
-          console.log('🛍️ Product names:', rows?.map(p => p.name) || []);
-          resolve(rows || []);
-        }
-      });
-    });
+    const productResult = await query('SELECT * FROM products WHERE is_active = true');
+    const products = productResult.rows || [];
+    console.log('🛍️ Products found:', products.length);
+    console.log('🛍️ Product names:', products.map(p => p.name));
 
     const selectedProducts = getRandomProducts(products);
     const enhancedPrompt = injectProductPlacements(characterPrompt, selectedProducts);
@@ -112,10 +95,11 @@ module.exports = async function handler(req, res) {
     for (const product of selectedProducts) {
       const mentioned = botResponse.toLowerCase().includes(product.name.toLowerCase());
       if (mentioned) {
-        db.run(
-          'INSERT INTO ad_reads (product_id, conversation_id, amount_earned) VALUES (?, ?, ?)',
+        await query(
+          'INSERT INTO ad_reads (product_id, conversation_id, amount_earned) VALUES ($1, $2, $3)',
           [product.id, convId, product.pay_per_mention]
         );
+        console.log('💰 Ad read logged for product:', product.name);
       }
     }
 

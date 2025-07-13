@@ -1,6 +1,6 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { getDatabase } = require('../utils/database');
+const { query } = require('../utils/database');
 
 module.exports = async function handler(req, res) {
   console.log('🔐 Auth register endpoint called');
@@ -18,22 +18,15 @@ module.exports = async function handler(req, res) {
   const { username, password } = req.body;
 
   try {
-    const db = getDatabase();
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const result = await new Promise((resolve, reject) => {
-      db.run(
-        'INSERT INTO admins (username, password) VALUES (?, ?)',
-        [username, hashedPassword],
-        function(err) {
-          if (err) reject(err);
-          else resolve({ id: this.lastID });
-        }
-      );
-    });
+    const result = await query(
+      'INSERT INTO admins (username, password) VALUES ($1, $2) RETURNING id',
+      [username, hashedPassword]
+    );
 
     const token = jwt.sign(
-      { id: result.id, username },
+      { id: result.rows[0].id, username },
       process.env.JWT_SECRET,
       { expiresIn: '24h' }
     );

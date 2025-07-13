@@ -1,6 +1,6 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { getDatabase } = require('../utils/database');
+const { query } = require('../utils/database');
 
 module.exports = async function handler(req, res) {
   console.log('🔐 Auth login endpoint called');
@@ -18,17 +18,8 @@ module.exports = async function handler(req, res) {
   const { username, password } = req.body;
 
   try {
-    const db = getDatabase();
-    const admin = await new Promise((resolve, reject) => {
-      db.get(
-        'SELECT * FROM admins WHERE username = ?',
-        [username],
-        (err, row) => {
-          if (err) reject(err);
-          else resolve(row);
-        }
-      );
-    });
+    const result = await query('SELECT * FROM admins WHERE username = $1', [username]);
+    const admin = result.rows[0];
 
     if (!admin) {
       return res.status(401).json({ error: 'Invalid credentials' });

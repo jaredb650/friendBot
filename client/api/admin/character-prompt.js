@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const { getDatabase } = require('../utils/database');
+const { query } = require('../utils/database');
 
 // Authentication middleware
 const authenticateToken = (req) => {
@@ -31,14 +31,10 @@ module.exports = async function handler(req, res) {
   if (req.method === 'GET') {
     // Get current character prompt
     try {
-      const db = getDatabase();
-      const prompt = await new Promise((resolve, reject) => {
-        db.get('SELECT prompt FROM character_prompt ORDER BY id DESC LIMIT 1', (err, row) => {
-          if (err) reject(err);
-          else resolve(row?.prompt || '');
-        });
-      });
+      const result = await query('SELECT prompt FROM character_prompt ORDER BY id DESC LIMIT 1');
+      const prompt = result.rows[0]?.prompt || '';
       
+      console.log('📝 Character prompt retrieved:', !!prompt);
       res.json({ prompt });
     } catch (error) {
       console.error('❌ Error fetching prompt:', error);
@@ -49,14 +45,9 @@ module.exports = async function handler(req, res) {
     const { prompt } = req.body;
     
     try {
-      const db = getDatabase();
-      await new Promise((resolve, reject) => {
-        db.run('INSERT INTO character_prompt (prompt) VALUES (?)', [prompt], function(err) {
-          if (err) reject(err);
-          else resolve();
-        });
-      });
+      await query('INSERT INTO character_prompt (prompt) VALUES ($1)', [prompt]);
       
+      console.log('📝 Character prompt saved successfully');
       res.json({ success: true });
     } catch (error) {
       console.error('❌ Error saving prompt:', error);

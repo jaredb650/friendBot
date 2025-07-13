@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
 const { parse } = require('url');
-const { getDatabase } = require('../utils/database');
+const { query } = require('../utils/database');
 
 // Authentication middleware
 const authenticateToken = (req) => {
@@ -36,14 +36,10 @@ module.exports = async function handler(req, res) {
   if (req.method === 'GET') {
     // Get all products
     try {
-      const db = getDatabase();
-      const products = await new Promise((resolve, reject) => {
-        db.all('SELECT * FROM products ORDER BY created_at DESC', (err, rows) => {
-          if (err) reject(err);
-          else resolve(rows || []);
-        });
-      });
+      const result = await query('SELECT * FROM products ORDER BY created_at DESC');
+      const products = result.rows || [];
       
+      console.log('🛍️ Products retrieved:', products.length);
       res.json(products);
     } catch (error) {
       console.error('❌ Error fetching products:', error);
@@ -54,19 +50,13 @@ module.exports = async function handler(req, res) {
     const { name, description, payPerMention } = req.body;
     
     try {
-      const db = getDatabase();
-      const result = await new Promise((resolve, reject) => {
-        db.run(
-          'INSERT INTO products (name, description, pay_per_mention) VALUES (?, ?, ?)',
-          [name, description, payPerMention],
-          function(err) {
-            if (err) reject(err);
-            else resolve({ id: this.lastID });
-          }
-        );
-      });
+      const result = await query(
+        'INSERT INTO products (name, description, pay_per_mention) VALUES ($1, $2, $3) RETURNING id',
+        [name, description, payPerMention]
+      );
       
-      res.json({ id: result.id, success: true });
+      console.log('🛍️ Product created:', name);
+      res.json({ id: result.rows[0].id, success: true });
     } catch (error) {
       console.error('❌ Error creating product:', error);
       res.status(500).json({ error: 'Database error' });
@@ -76,18 +66,12 @@ module.exports = async function handler(req, res) {
     const { name, description, payPerMention, isActive } = req.body;
     
     try {
-      const db = getDatabase();
-      await new Promise((resolve, reject) => {
-        db.run(
-          'UPDATE products SET name = ?, description = ?, pay_per_mention = ?, is_active = ? WHERE id = ?',
-          [name, description, payPerMention, isActive, productId],
-          function(err) {
-            if (err) reject(err);
-            else resolve();
-          }
-        );
-      });
+      await query(
+        'UPDATE products SET name = $1, description = $2, pay_per_mention = $3, is_active = $4 WHERE id = $5',
+        [name, description, payPerMention, isActive, productId]
+      );
       
+      console.log('🛍️ Product updated:', productId);
       res.json({ success: true });
     } catch (error) {
       console.error('❌ Error updating product:', error);
@@ -96,14 +80,9 @@ module.exports = async function handler(req, res) {
   } else if (req.method === 'DELETE') {
     // Delete product
     try {
-      const db = getDatabase();
-      await new Promise((resolve, reject) => {
-        db.run('DELETE FROM products WHERE id = ?', [productId], function(err) {
-          if (err) reject(err);
-          else resolve();
-        });
-      });
+      await query('DELETE FROM products WHERE id = $1', [productId]);
       
+      console.log('🛍️ Product deleted:', productId);
       res.json({ success: true });
     } catch (error) {
       console.error('❌ Error deleting product:', error);
