@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
 import { useAuth } from '../contexts/AuthContext';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
@@ -102,7 +102,7 @@ const Analytics: React.FC = () => {
   const COLORS = ['#6b46c1', '#10b981', '#f59e0b', '#ef4444', '#3b82f6', '#8b5cf6'];
 
   // Safely prepare chart data with error handling
-  const preparedChartData = React.useMemo(() => {
+  const preparedChartData = useMemo(() => {
     try {
       if (!dashboardData?.dailyEarnings || !Array.isArray(dashboardData.dailyEarnings)) {
         console.log('📊 Frontend: No daily earnings data available');
@@ -132,7 +132,7 @@ const Analytics: React.FC = () => {
     }
   }, [dashboardData?.dailyEarnings]);
 
-  const productChartData = React.useMemo(() => {
+  const productChartData = useMemo(() => {
     try {
       if (!dashboardData?.productStats || !Array.isArray(dashboardData.productStats)) {
         console.log('📊 Frontend: No product stats data available');
