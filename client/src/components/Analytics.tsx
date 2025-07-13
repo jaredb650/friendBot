@@ -22,7 +22,13 @@ interface DashboardData {
 }
 
 const Analytics: React.FC = () => {
-  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
+  const [dashboardData, setDashboardData] = useState<DashboardData>({
+    totalEarnings: 0,
+    totalAdReads: 0,
+    totalConversations: 0,
+    productStats: [],
+    dailyEarnings: []
+  });
   const [isLoading, setIsLoading] = useState(true);
   const [selectedTimeframe, setSelectedTimeframe] = useState('30days');
   const { token } = useAuth();
@@ -34,12 +40,45 @@ const Analytics: React.FC = () => {
   const fetchDashboardData = async () => {
     setIsLoading(true);
     try {
+      console.log('📊 Frontend: Fetching analytics data...');
       const response = await axios.get('/api/analytics/dashboard', {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setDashboardData(response.data);
-    } catch (error) {
-      console.error('Error fetching analytics:', error);
+      
+      console.log('📊 Frontend: Raw response:', response.data);
+      
+      // Sanitize the data to prevent type errors
+      const sanitizedData = {
+        totalEarnings: Number(response.data.totalEarnings) || 0,
+        totalAdReads: Number(response.data.totalAdReads) || 0,
+        totalConversations: Number(response.data.totalConversations) || 0,
+        productStats: Array.isArray(response.data.productStats) ? response.data.productStats.map((stat: any) => ({
+          name: String(stat.name || 'Unknown'),
+          pay_per_mention: Number(stat.pay_per_mention) || 0,
+          mentions: Number(stat.mentions) || 0,
+          earnings: Number(stat.earnings) || 0
+        })) : [],
+        dailyEarnings: Array.isArray(response.data.dailyEarnings) ? response.data.dailyEarnings.map((earning: any) => ({
+          date: String(earning.date || new Date().toISOString().split('T')[0]),
+          earnings: Number(earning.earnings) || 0,
+          ad_reads: Number(earning.ad_reads) || 0
+        })) : []
+      };
+      
+      console.log('📊 Frontend: Sanitized data:', sanitizedData);
+      setDashboardData(sanitizedData);
+    } catch (error: any) {
+      console.error('❌ Frontend: Analytics error:', error);
+      console.error('❌ Frontend: Error response:', error.response?.data);
+      
+      // Set empty data instead of crashing
+      setDashboardData({
+        totalEarnings: 0,
+        totalAdReads: 0,
+        totalConversations: 0,
+        productStats: [],
+        dailyEarnings: []
+      });
     }
     setIsLoading(false);
   };
@@ -62,12 +101,50 @@ const Analytics: React.FC = () => {
 
   const COLORS = ['#6b46c1', '#10b981', '#f59e0b', '#ef4444', '#3b82f6', '#8b5cf6'];
 
-  const preparedChartData = dashboardData.dailyEarnings.map(item => ({
-    ...item,
-    date: new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-  })).reverse();
+  // Safely prepare chart data with error handling
+  const preparedChartData = React.useMemo(() => {
+    try {
+      if (!dashboardData?.dailyEarnings || !Array.isArray(dashboardData.dailyEarnings)) {
+        console.log('📊 Frontend: No daily earnings data available');
+        return [];
+      }
+      
+      return dashboardData.dailyEarnings.map(item => {
+        try {
+          return {
+            ...item,
+            date: new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+            earnings: Number(item.earnings) || 0,
+            ad_reads: Number(item.ad_reads) || 0
+          };
+        } catch (itemError) {
+          console.error('❌ Frontend: Error processing daily earnings item:', itemError, item);
+          return {
+            date: 'Invalid',
+            earnings: 0,
+            ad_reads: 0
+          };
+        }
+      }).reverse();
+    } catch (error) {
+      console.error('❌ Frontend: Error preparing chart data:', error);
+      return [];
+    }
+  }, [dashboardData?.dailyEarnings]);
 
-  const productChartData = dashboardData.productStats.filter(p => p.mentions > 0);
+  const productChartData = React.useMemo(() => {
+    try {
+      if (!dashboardData?.productStats || !Array.isArray(dashboardData.productStats)) {
+        console.log('📊 Frontend: No product stats data available');
+        return [];
+      }
+      
+      return dashboardData.productStats.filter(p => p && Number(p.mentions) > 0);
+    } catch (error) {
+      console.error('❌ Frontend: Error filtering product data:', error);
+      return [];
+    }
+  }, [dashboardData?.productStats]);
 
   return (
     <div className="admin-section">

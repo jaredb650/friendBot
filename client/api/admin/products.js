@@ -50,16 +50,34 @@ module.exports = async function handler(req, res) {
     const { name, description, payPerMention } = req.body;
     
     try {
+      console.log('🛍️ Creating new product:', {
+        name,
+        description: description?.substring(0, 50) + '...',
+        payPerMention,
+        payPerMentionType: typeof payPerMention
+      });
+      
+      // Validate and sanitize input
+      const sanitizedPayPerMention = parseFloat(payPerMention) || 0;
+      
       const result = await query(
-        'INSERT INTO products (name, description, pay_per_mention) VALUES ($1, $2, $3) RETURNING id',
-        [name, description, payPerMention]
+        'INSERT INTO products (name, description, pay_per_mention) VALUES ($1, $2, $3) RETURNING id, name, pay_per_mention',
+        [name, description, sanitizedPayPerMention]
       );
       
-      console.log('🛍️ Product created:', name);
-      res.json({ id: result.rows[0].id, success: true });
+      const createdProduct = result.rows[0];
+      console.log('🛍️ Product created successfully:', {
+        id: createdProduct.id,
+        name: createdProduct.name,
+        payPerMention: createdProduct.pay_per_mention,
+        payPerMentionType: typeof createdProduct.pay_per_mention
+      });
+      
+      res.json({ id: createdProduct.id, success: true });
     } catch (error) {
       console.error('❌ Error creating product:', error);
-      res.status(500).json({ error: 'Database error' });
+      console.error('❌ Product creation data:', { name, description, payPerMention });
+      res.status(500).json({ error: 'Database error', details: error.message });
     }
   } else if (req.method === 'PUT') {
     // Update product

@@ -92,16 +92,45 @@ module.exports = async function handler(req, res) {
     const botResponse = response.text();
     console.log('✅ Bot response length:', botResponse?.length || 0);
 
+    console.log('🔍 Checking for product mentions in bot response...');
+    let totalEarnings = 0;
+    let mentionedProducts = [];
+    
     for (const product of selectedProducts) {
       const mentioned = botResponse.toLowerCase().includes(product.name.toLowerCase());
+      console.log(`🔍 Checking "${product.name}": ${mentioned ? 'MENTIONED' : 'not mentioned'}`);
+      
       if (mentioned) {
-        await query(
-          'INSERT INTO ad_reads (product_id, conversation_id, amount_earned) VALUES ($1, $2, $3)',
-          [product.id, convId, product.pay_per_mention]
-        );
-        console.log('💰 Ad read logged for product:', product.name);
+        try {
+          const result = await query(
+            'INSERT INTO ad_reads (product_id, conversation_id, amount_earned) VALUES ($1, $2, $3) RETURNING id',
+            [product.id, convId, product.pay_per_mention]
+          );
+          
+          totalEarnings += parseFloat(product.pay_per_mention);
+          mentionedProducts.push(product.name);
+          
+          console.log('💰 Ad read logged successfully:', {
+            adReadId: result.rows[0]?.id,
+            productName: product.name,
+            productId: product.id,
+            conversationId: convId,
+            earnings: product.pay_per_mention,
+            totalEarnings: totalEarnings
+          });
+        } catch (adError) {
+          console.error('❌ Error logging ad read:', adError);
+          console.error('❌ Ad read data:', {
+            productId: product.id,
+            conversationId: convId,
+            payPerMention: product.pay_per_mention
+          });
+        }
       }
     }
+    
+    console.log('💰 Total earnings for this conversation:', totalEarnings);
+    console.log('💰 Products mentioned:', mentionedProducts);
 
     res.json({
       response: botResponse,
