@@ -14,6 +14,7 @@ const ChatInterface: React.FC = () => {
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [conversationId, setConversationId] = useState<string | null>(null);
+  const [hasInitialized, setHasInitialized] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -24,15 +25,52 @@ const ChatInterface: React.FC = () => {
     scrollToBottom();
   }, [messages]);
 
+  // Generate welcome message using current character prompt
+  const generateWelcomeMessage = async () => {
+    if (hasInitialized) return;
+    
+    setIsLoading(true);
+    try {
+      const response = await axios.post('/api/chat/message', {
+        message: "Hello! Please introduce yourself to me.",
+        conversationId: null
+      });
+
+      const welcomeMessage: Message = {
+        id: '1',
+        text: response.data.response,
+        isUser: false,
+        timestamp: new Date()
+      };
+
+      setMessages([welcomeMessage]);
+      setConversationId(response.data.conversationId);
+      setHasInitialized(true);
+    } catch (error) {
+      // Fallback to default message if API fails
+      const fallbackMessage: Message = {
+        id: '1',
+        text: "Hey there! I'm having some technical difficulties, but I'm excited to chat with you! What's on your mind?",
+        isUser: false,
+        timestamp: new Date()
+      };
+      setMessages([fallbackMessage]);
+      setHasInitialized(true);
+    }
+    setIsLoading(false);
+  };
+
   useEffect(() => {
-    const welcomeMessage: Message = {
-      id: '1',
-      text: "Hey there bestie! 🤗 OMG I'm SO excited to chat with you today! Speaking of excitement, have you heard about the NEW Premium Friendship Experience™? It's only $19.99/month and includes unlimited emoji reactions! But anyway, what's up?!",
-      isUser: false,
-      timestamp: new Date()
-    };
-    setMessages([welcomeMessage]);
-  }, []);
+    generateWelcomeMessage();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Function to start a new chat
+  const startNewChat = () => {
+    setMessages([]);
+    setConversationId(null);
+    setHasInitialized(false);
+    generateWelcomeMessage();
+  };
 
   const sendMessage = async () => {
     if (!inputMessage.trim() || isLoading) return;
@@ -88,7 +126,12 @@ const ChatInterface: React.FC = () => {
       <div className="chat-header">
         <h1>🤖 FriendBot - Your Best Friend Forever! 💕</h1>
         <p className="subtitle">The friend who TOTALLY cares about you (and wants to sell you stuff)!</p>
-        <a href="/admin/login" className="admin-link">Admin Panel</a>
+        <div className="header-controls">
+          <button onClick={startNewChat} className="new-chat-button">
+            🔄 New Chat
+          </button>
+          <a href="/admin/login" className="admin-link">Admin Panel</a>
+        </div>
       </div>
       
       <div className="messages-container">

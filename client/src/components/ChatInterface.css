@@ -15,6 +15,31 @@
   position: relative;
 }
 
+.header-controls {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.new-chat-button {
+  background: #10b981;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.new-chat-button:hover {
+  background: #059669;
+  transform: translateY(-1px);
+}
+
 .chat-header h1 {
   margin: 0 0 10px 0;
   color: #6b46c1;
@@ -28,9 +53,6 @@
 }
 
 .admin-link {
-  position: absolute;
-  top: 20px;
-  right: 20px;
   color: #6b46c1;
   text-decoration: none;
   font-size: 0.9rem;
@@ -152,9 +174,13 @@
     font-size: 1.5rem;
   }
   
-  .admin-link {
+  .header-controls {
     position: static;
-    display: inline-block;
+    justify-content: center;
     margin-top: 10px;
+  }
+  
+  .admin-link {
+    display: inline-block;
   }
 }
