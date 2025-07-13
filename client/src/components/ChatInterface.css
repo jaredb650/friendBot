@@ -1,0 +1,160 @@
+.chat-container {
+  max-width: 800px;
+  margin: 0 auto;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.chat-header {
+  background: rgba(255, 255, 255, 0.95);
+  padding: 20px;
+  text-align: center;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  position: relative;
+}
+
+.chat-header h1 {
+  margin: 0 0 10px 0;
+  color: #6b46c1;
+  font-size: 2rem;
+}
+
+.subtitle {
+  color: #666;
+  margin: 0;
+  font-style: italic;
+}
+
+.admin-link {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  color: #6b46c1;
+  text-decoration: none;
+  font-size: 0.9rem;
+  padding: 8px 16px;
+  border: 1px solid #6b46c1;
+  border-radius: 20px;
+  transition: all 0.3s ease;
+}
+
+.admin-link:hover {
+  background: #6b46c1;
+  color: white;
+}
+
+.messages-container {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.message {
+  display: flex;
+  max-width: 70%;
+}
+
+.user-message {
+  align-self: flex-end;
+}
+
+.bot-message {
+  align-self: flex-start;
+}
+
+.message-content {
+  background: white;
+  padding: 15px;
+  border-radius: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.user-message .message-content {
+  background: #6b46c1;
+  color: white;
+}
+
+.message-content p {
+  margin: 0 0 8px 0;
+  line-height: 1.5;
+}
+
+.timestamp {
+  font-size: 0.8rem;
+  opacity: 0.7;
+}
+
+.typing-indicator {
+  font-style: italic;
+  color: #666;
+}
+
+.input-container {
+  background: rgba(255, 255, 255, 0.95);
+  padding: 20px;
+  display: flex;
+  gap: 15px;
+  align-items: flex-end;
+}
+
+.message-input {
+  flex: 1;
+  padding: 15px;
+  border: 2px solid #e5e7eb;
+  border-radius: 25px;
+  resize: none;
+  font-family: inherit;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.3s ease;
+}
+
+.message-input:focus {
+  border-color: #6b46c1;
+}
+
+.send-button {
+  padding: 15px 25px;
+  background: #6b46c1;
+  color: white;
+  border: none;
+  border-radius: 25px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.send-button:hover:not(:disabled) {
+  background: #553c9a;
+  transform: translateY(-2px);
+}
+
+.send-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+  .chat-container {
+    height: 100vh;
+  }
+  
+  .message {
+    max-width: 85%;
+  }
+  
+  .chat-header h1 {
+    font-size: 1.5rem;
+  }
+  
+  .admin-link {
+    position: static;
+    display: inline-block;
+    margin-top: 10px;
+  }
+}

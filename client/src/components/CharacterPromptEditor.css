@@ -1,0 +1,147 @@
+.section-description {
+  color: #666;
+  margin-bottom: 25px;
+  font-style: italic;
+}
+
+.message {
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  text-align: center;
+  font-weight: 500;
+}
+
+.message.success {
+  background: #d1fae5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+}
+
+.message.error {
+  background: #fee2e2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
+
+.prompt-templates {
+  margin-bottom: 30px;
+}
+
+.prompt-templates h3 {
+  color: #374151;
+  margin-bottom: 15px;
+}
+
+.template-buttons {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.template-btn {
+  background: #f3f4f6;
+  border: 2px solid #d1d5db;
+  padding: 10px 15px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+}
+
+.template-btn:hover {
+  background: #e5e7eb;
+  border-color: #6b46c1;
+}
+
+.prompt-editor {
+  margin-bottom: 30px;
+}
+
+.prompt-editor h3 {
+  color: #374151;
+  margin-bottom: 10px;
+}
+
+.prompt-textarea {
+  width: 100%;
+  padding: 15px;
+  border: 2px solid #e5e7eb;
+  border-radius: 10px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.3s ease;
+}
+
+.prompt-textarea:focus {
+  border-color: #6b46c1;
+}
+
+.editor-actions {
+  display: flex;
+  gap: 15px;
+  margin-top: 15px;
+}
+
+.save-btn {
+  background: #6b46c1;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.save-btn:hover:not(:disabled) {
+  background: #553c9a;
+  transform: translateY(-2px);
+}
+
+.save-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.reset-btn {
+  background: #6b7280;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.reset-btn:hover {
+  background: #4b5563;
+}
+
+.prompt-tips {
+  background: #f8fafc;
+  padding: 20px;
+  border-radius: 10px;
+  border-left: 4px solid #6b46c1;
+}
+
+.prompt-tips h3 {
+  color: #374151;
+  margin-bottom: 15px;
+}
+
+.prompt-tips ul {
+  color: #4b5563;
+  padding-left: 20px;
+}
+
+.prompt-tips li {
+  margin-bottom: 8px;
+  line-height: 1.5;
+}
