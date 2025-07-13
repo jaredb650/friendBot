@@ -139,7 +139,23 @@ const ProductManager: React.FC = () => {
       console.error('❌ Frontend: Error status:', error.response?.status);
       console.error('❌ Frontend: Error message:', error.message);
       
-      const errorMessage = error.response?.data?.error || error.response?.data?.details || error.message || 'Unknown error';
+      // Try to extract meaningful error message
+      let errorMessage = 'Unknown error';
+      if (error.response?.data) {
+        if (typeof error.response.data === 'string') {
+          errorMessage = error.response.data;
+        } else if (error.response.data.error) {
+          errorMessage = error.response.data.error;
+        } else if (error.response.data.details) {
+          errorMessage = error.response.data.details;
+        } else {
+          errorMessage = JSON.stringify(error.response.data);
+        }
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      console.log('❌ Frontend: Processed error message:', errorMessage);
       setMessage(`Failed to ${newStatus ? 'activate' : 'deactivate'} product campaign: ${errorMessage}`);
       setIsSuccess(false);
     }

@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const { query } = require('../utils/database');
+const { query } = require('../../utils/database');
 
 // Authentication middleware
 const authenticateToken = (req) => {
@@ -19,39 +19,48 @@ const authenticateToken = (req) => {
 };
 
 module.exports = async function handler(req, res) {
-  console.log('🛍️ Dynamic Products API called with method:', req.method);
-  console.log('🛍️ Full URL:', req.url);
-  console.log('🛍️ Query params:', req.query);
-  
   try {
+    console.log('🛍️ Dynamic Products API called with method:', req.method);
+    console.log('🛍️ Full URL:', req.url);
+    console.log('🛍️ Query params:', req.query);
+    console.log('🛍️ Headers authorization:', req.headers.authorization ? 'Present' : 'Missing');
+    
+    // Test database connection first
+    console.log('🔗 Testing database connection...');
+    await query('SELECT 1');
+    console.log('✅ Database connection successful');
+    
     // Authenticate user
+    console.log('🔐 Authenticating user...');
     authenticateToken(req);
+    console.log('✅ Authentication successful');
   } catch (error) {
-    console.log('❌ Authentication failed:', error.message);
-    return res.status(401).json({ error: error.message });
+    console.log('❌ Initial setup failed:', error.message);
+    console.log('❌ Error stack:', error.stack);
+    return res.status(500).json({ error: error.message, details: 'Initial setup failed' });
   }
 
   const productId = req.query.id;
   console.log('🛍️ Product ID from query:', productId, 'Type:', typeof productId);
 
-  if (req.method === 'PUT') {
-    // Update product
-    console.log('📝 PUT request received for product update');
-    console.log('📝 Product ID:', productId);
-    
-    const { name, description, payPerMention, isActive } = req.body;
-    console.log('📝 Update payload:', { name, description, payPerMention, isActive });
-    
-    // Validate productId
-    if (!productId || isNaN(productId)) {
-      console.error('❌ Invalid product ID for update:', productId);
-      return res.status(400).json({ error: 'Invalid product ID' });
-    }
-    
-    const numericProductId = parseInt(productId);
-    console.log('📝 Converted to numeric ID:', numericProductId);
-    
-    try {
+  try {
+    if (req.method === 'PUT') {
+      // Update product
+      console.log('📝 PUT request received for product update');
+      console.log('📝 Product ID:', productId);
+      
+      const { name, description, payPerMention, isActive } = req.body;
+      console.log('📝 Update payload:', { name, description, payPerMention, isActive });
+      
+      // Validate productId
+      if (!productId || isNaN(productId)) {
+        console.error('❌ Invalid product ID for update:', productId);
+        return res.status(400).json({ error: 'Invalid product ID' });
+      }
+      
+      const numericProductId = parseInt(productId);
+      console.log('📝 Converted to numeric ID:', numericProductId);
+      
       // Check if product exists first
       const existsResult = await query('SELECT id FROM products WHERE id = $1', [numericProductId]);
       if (!existsResult.rows || existsResult.rows.length === 0) {
@@ -75,12 +84,6 @@ module.exports = async function handler(req, res) {
       
       console.log('✅ Product updated successfully:', numericProductId);
       res.json({ success: true, productId: numericProductId });
-    } catch (error) {
-      console.error('❌ Error updating product:', error);
-      console.error('❌ Error stack:', error.stack);
-      console.error('❌ Product ID:', productId);
-      res.status(500).json({ error: 'Database error', details: error.message });
-    }
   } else if (req.method === 'DELETE') {
     // Delete product and ALL associated analytics data
     try {
@@ -141,6 +144,15 @@ module.exports = async function handler(req, res) {
       res.status(500).json({ error: 'Database error', details: error.message, stack: error.stack });
     }
   } else {
+    console.log('❌ Method not allowed:', req.method);
     res.status(405).json({ error: 'Method not allowed' });
   }
-};
+} catch (globalError) {
+  console.error('❌ Global error handler:', globalError);
+  console.error('❌ Global error stack:', globalError.stack);
+  res.status(500).json({ 
+    error: 'Internal server error', 
+    details: globalError.message,
+    stack: globalError.stack 
+  });
+}

@@ -22,6 +22,7 @@ const authenticateToken = (req) => {
 module.exports = async function handler(req, res) {
   console.log('🛍️ Products API called with method:', req.method);
   console.log('🛍️ Full URL:', req.url);
+  console.log('🛍️ API function reached successfully!');
   
   try {
     // Authenticate user
