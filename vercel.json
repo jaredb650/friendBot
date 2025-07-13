@@ -1,0 +1,9 @@
+{
+  "buildCommand": "cd client && npm run build",
+  "outputDirectory": "client/build",
+  "functions": {
+    "client/api/**/*.js": {
+      "runtime": "@vercel/node@3.0.0"
+    }
+  }
+}

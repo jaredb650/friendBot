@@ -1,18 +1,5 @@
 const jwt = require('jsonwebtoken');
-const sqlite3 = require('sqlite3').verbose();
-
-// Create database connection
-const dbPath = '/tmp/friendbot.db';
-const db = new sqlite3.Database(dbPath);
-
-// Initialize database tables
-db.serialize(() => {
-  db.run(`CREATE TABLE IF NOT EXISTS character_prompt (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    prompt TEXT NOT NULL,
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-  )`);
-});
+const { getDatabase } = require('../utils/database');
 
 // Authentication middleware
 const authenticateToken = (req) => {
@@ -44,6 +31,7 @@ module.exports = async function handler(req, res) {
   if (req.method === 'GET') {
     // Get current character prompt
     try {
+      const db = getDatabase();
       const prompt = await new Promise((resolve, reject) => {
         db.get('SELECT prompt FROM character_prompt ORDER BY id DESC LIMIT 1', (err, row) => {
           if (err) reject(err);
@@ -61,6 +49,7 @@ module.exports = async function handler(req, res) {
     const { prompt } = req.body;
     
     try {
+      const db = getDatabase();
       await new Promise((resolve, reject) => {
         db.run('INSERT INTO character_prompt (prompt) VALUES (?)', [prompt], function(err) {
           if (err) reject(err);
