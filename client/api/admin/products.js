@@ -1,22 +1,6 @@
 const jwt = require('jsonwebtoken');
-const sqlite3 = require('sqlite3').verbose();
 const { parse } = require('url');
-
-// Create database connection
-const dbPath = '/tmp/friendbot.db';
-const db = new sqlite3.Database(dbPath);
-
-// Initialize database tables
-db.serialize(() => {
-  db.run(`CREATE TABLE IF NOT EXISTS products (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
-    description TEXT NOT NULL,
-    pay_per_mention REAL NOT NULL DEFAULT 0,
-    is_active BOOLEAN DEFAULT 1,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-  )`);
-});
+const { getDatabase } = require('../utils/database');
 
 // Authentication middleware
 const authenticateToken = (req) => {
@@ -52,6 +36,7 @@ module.exports = async function handler(req, res) {
   if (req.method === 'GET') {
     // Get all products
     try {
+      const db = getDatabase();
       const products = await new Promise((resolve, reject) => {
         db.all('SELECT * FROM products ORDER BY created_at DESC', (err, rows) => {
           if (err) reject(err);
@@ -69,6 +54,7 @@ module.exports = async function handler(req, res) {
     const { name, description, payPerMention } = req.body;
     
     try {
+      const db = getDatabase();
       const result = await new Promise((resolve, reject) => {
         db.run(
           'INSERT INTO products (name, description, pay_per_mention) VALUES (?, ?, ?)',
@@ -90,6 +76,7 @@ module.exports = async function handler(req, res) {
     const { name, description, payPerMention, isActive } = req.body;
     
     try {
+      const db = getDatabase();
       await new Promise((resolve, reject) => {
         db.run(
           'UPDATE products SET name = ?, description = ?, pay_per_mention = ?, is_active = ? WHERE id = ?',
@@ -109,6 +96,7 @@ module.exports = async function handler(req, res) {
   } else if (req.method === 'DELETE') {
     // Delete product
     try {
+      const db = getDatabase();
       await new Promise((resolve, reject) => {
         db.run('DELETE FROM products WHERE id = ?', [productId], function(err) {
           if (err) reject(err);

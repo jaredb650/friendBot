@@ -1,36 +1,5 @@
 const jwt = require('jsonwebtoken');
-const sqlite3 = require('sqlite3').verbose();
-
-// Create database connection
-const dbPath = '/tmp/friendbot.db';
-const db = new sqlite3.Database(dbPath);
-
-// Initialize database tables
-db.serialize(() => {
-  db.run(`CREATE TABLE IF NOT EXISTS ad_reads (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    product_id INTEGER,
-    conversation_id TEXT,
-    amount_earned REAL,
-    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (product_id) REFERENCES products (id)
-  )`);
-  
-  db.run(`CREATE TABLE IF NOT EXISTS conversations (
-    id TEXT PRIMARY KEY,
-    started_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    last_activity DATETIME DEFAULT CURRENT_TIMESTAMP
-  )`);
-  
-  db.run(`CREATE TABLE IF NOT EXISTS products (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
-    description TEXT NOT NULL,
-    pay_per_mention REAL NOT NULL DEFAULT 0,
-    is_active BOOLEAN DEFAULT 1,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-  )`);
-});
+const { getDatabase } = require('../utils/database');
 
 // Authentication middleware
 const authenticateToken = (req) => {
@@ -64,6 +33,7 @@ module.exports = async function handler(req, res) {
   }
 
   try {
+    const db = getDatabase();
     const queries = {
       totalEarnings: `SELECT SUM(amount_earned) as total FROM ad_reads`,
       totalAdReads: `SELECT COUNT(*) as count FROM ad_reads`,

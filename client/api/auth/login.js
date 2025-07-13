@@ -1,21 +1,6 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const sqlite3 = require('sqlite3').verbose();
-const path = require('path');
-
-// Create database connection
-const dbPath = '/tmp/friendbot.db';
-const db = new sqlite3.Database(dbPath);
-
-// Initialize database tables
-db.serialize(() => {
-  db.run(`CREATE TABLE IF NOT EXISTS admins (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    username TEXT UNIQUE NOT NULL,
-    password TEXT NOT NULL,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-  )`);
-});
+const { getDatabase } = require('../utils/database');
 
 module.exports = async function handler(req, res) {
   console.log('🔐 Auth login endpoint called');
@@ -27,6 +12,7 @@ module.exports = async function handler(req, res) {
   const { username, password } = req.body;
 
   try {
+    const db = getDatabase();
     const admin = await new Promise((resolve, reject) => {
       db.get(
         'SELECT * FROM admins WHERE username = ?',
