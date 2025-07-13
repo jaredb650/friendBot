@@ -2,6 +2,11 @@ const { GoogleGenerativeAI } = require('@google/generative-ai');
 const { v4: uuidv4 } = require('uuid');
 const { getDatabase } = require('../utils/database');
 
+// Validate environment variables
+if (!process.env.GEMINI_API_KEY) {
+  console.error('❌ GEMINI_API_KEY environment variable is not set');
+}
+
 // Initialize Gemini AI
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
@@ -32,6 +37,12 @@ Remember to track which products you mention so we can log the earnings!`;
 module.exports = async function handler(req, res) {
   console.log('📥 Chat API called with method:', req.method);
   
+  // Validate environment variables
+  if (!process.env.GEMINI_API_KEY) {
+    console.error('❌ GEMINI_API_KEY not configured');
+    return res.status(500).json({ error: 'Server configuration error: Missing API key' });
+  }
+  
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -53,15 +64,26 @@ module.exports = async function handler(req, res) {
 
     const characterPrompt = await new Promise((resolve, reject) => {
       db.get('SELECT prompt FROM character_prompt ORDER BY id DESC LIMIT 1', (err, row) => {
-        if (err) reject(err);
-        else resolve(row?.prompt || 'You are a helpful assistant.');
+        if (err) {
+          console.error('❌ Error fetching character prompt:', err);
+          reject(err);
+        } else {
+          console.log('📝 Character prompt found:', !!row?.prompt);
+          resolve(row?.prompt || 'You are a helpful assistant.');
+        }
       });
     });
 
     const products = await new Promise((resolve, reject) => {
       db.all('SELECT * FROM products WHERE is_active = 1', (err, rows) => {
-        if (err) reject(err);
-        else resolve(rows || []);
+        if (err) {
+          console.error('❌ Error fetching products:', err);
+          reject(err);
+        } else {
+          console.log('🛍️ Products found:', rows?.length || 0);
+          console.log('🛍️ Product names:', rows?.map(p => p.name) || []);
+          resolve(rows || []);
+        }
       });
     });
 

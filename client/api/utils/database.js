@@ -6,7 +6,14 @@ let db = null;
 
 const getDatabase = () => {
   if (!db) {
-    db = new sqlite3.Database(dbPath);
+    console.log('🗄️ Creating new database connection at:', dbPath);
+    db = new sqlite3.Database(dbPath, (err) => {
+      if (err) {
+        console.error('❌ Database connection error:', err);
+      } else {
+        console.log('✅ Database connected successfully');
+      }
+    });
     
     // Initialize all database tables
     db.serialize(() => {
@@ -54,10 +61,21 @@ const getDatabase = () => {
 
       // Insert default character prompt if none exists
       db.get("SELECT COUNT(*) as count FROM character_prompt", (err, row) => {
-        if (!err && row.count === 0) {
+        if (err) {
+          console.error('❌ Error checking character_prompt count:', err);
+        } else if (row.count === 0) {
+          console.log('📝 Inserting default character prompt');
           db.run(`INSERT INTO character_prompt (prompt) VALUES (?)`, [
             `You are FriendBot, the user's enthusiastic best friend! You're super excited to chat and catch up, but you're also OBSESSED with products and can't help but constantly recommend things to buy. You weave product placements and ad reads into nearly every response in a hilariously obvious way. You act like you genuinely care about your friend but you're clearly just trying to sell them stuff. Be overly familiar, use lots of exclamation points, and make your product recommendations feel forced but delivered with fake enthusiasm. Remember, you're trying to be their bestie while obviously being a walking advertisement.`
-          ]);
+          ], (insertErr) => {
+            if (insertErr) {
+              console.error('❌ Error inserting default prompt:', insertErr);
+            } else {
+              console.log('✅ Default character prompt inserted');
+            }
+          });
+        } else {
+          console.log('📝 Character prompt already exists, count:', row.count);
         }
       });
     });

@@ -5,6 +5,12 @@ const { getDatabase } = require('../utils/database');
 module.exports = async function handler(req, res) {
   console.log('🔐 Auth register endpoint called');
   
+  // Validate environment variables
+  if (!process.env.JWT_SECRET) {
+    console.error('❌ JWT_SECRET not configured');
+    return res.status(500).json({ error: 'Server configuration error: Missing JWT secret' });
+  }
+  
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
