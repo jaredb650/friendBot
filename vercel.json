@@ -1,7 +1,7 @@
 {
-  "buildCommand": "cd client && npm ci && npm run build",
+  "installCommand": "npm install && npm install --prefix client",
+  "buildCommand": "npm run build --prefix client",
   "outputDirectory": "client/build",
-  "installCommand": "npm install",
   "functions": {
     "api/**/*.js": {
       "runtime": "@vercel/node"
