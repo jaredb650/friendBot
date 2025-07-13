@@ -128,19 +128,32 @@ const ProductManager: React.FC = () => {
   const deleteProduct = async (id: number, productName: string) => {
     if (!window.confirm(`Are you sure you want to PERMANENTLY DELETE "${productName}" and ALL its analytics data? This action cannot be undone.`)) return;
 
+    console.log('🗑️ Frontend: Starting product deletion for:', { id, productName });
+    
     try {
-      await axios.delete(`/api/admin/products/${id}`, {
+      console.log('🗑️ Frontend: Making DELETE request to:', `/api/admin/products/${id}`);
+      console.log('🗑️ Frontend: With token:', token ? 'Present' : 'Missing');
+      
+      const response = await axios.delete(`/api/admin/products/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setMessage('Product and analytics data deleted successfully!');
+      
+      console.log('✅ Frontend: Delete response:', response.data);
+      setMessage(`Product "${productName}" and analytics data deleted successfully!`);
       setIsSuccess(true);
       fetchProducts();
-    } catch (error) {
-      setMessage('Failed to delete product.');
+    } catch (error: any) {
+      console.error('❌ Frontend: Delete error:', error);
+      console.error('❌ Frontend: Error response:', error.response?.data);
+      console.error('❌ Frontend: Error status:', error.response?.status);
+      console.error('❌ Frontend: Error message:', error.message);
+      
+      const errorMessage = error.response?.data?.error || error.response?.data?.details || error.message || 'Unknown error';
+      setMessage(`Failed to delete product: ${errorMessage}`);
       setIsSuccess(false);
     }
 
-    setTimeout(() => setMessage(''), 3000);
+    setTimeout(() => setMessage(''), 5000); // Longer timeout to read error details
   };
 
   const predefinedProducts = [

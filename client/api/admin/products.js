@@ -21,17 +21,24 @@ const authenticateToken = (req) => {
 
 module.exports = async function handler(req, res) {
   console.log('🛍️ Products API called with method:', req.method);
+  console.log('🛍️ Full URL:', req.url);
   
   try {
     // Authenticate user
     authenticateToken(req);
   } catch (error) {
+    console.log('❌ Authentication failed:', error.message);
     return res.status(401).json({ error: error.message });
   }
 
   const { pathname } = parse(req.url, true);
+  console.log('🛍️ Parsed pathname:', pathname);
+  
   const pathParts = pathname.split('/').filter(part => part);
+  console.log('🛍️ Path parts:', pathParts);
+  
   const productId = pathParts[pathParts.length - 1];
+  console.log('🛍️ Extracted productId:', productId, 'Type:', typeof productId);
 
   if (req.method === 'GET') {
     // Get all products
@@ -99,29 +106,60 @@ module.exports = async function handler(req, res) {
     // Delete product and ALL associated analytics data
     try {
       console.log('🗑️ Starting complete product deletion for ID:', productId);
+      console.log('🗑️ ProductId type:', typeof productId);
+      console.log('🗑️ ProductId isNaN:', isNaN(productId));
       
-      // First delete all ad_reads (analytics) associated with this product
-      const adReadsResult = await query('DELETE FROM ad_reads WHERE product_id = $1', [productId]);
-      console.log('🗑️ Deleted ad_reads:', adReadsResult.rowCount || 0);
+      // Validate productId
+      if (!productId || isNaN(productId)) {
+        console.error('❌ Invalid product ID provided:', productId);
+        return res.status(400).json({ error: 'Invalid product ID' });
+      }
       
-      // Then delete the product itself
-      const productResult = await query('DELETE FROM products WHERE id = $1', [productId]);
-      console.log('🗑️ Deleted product:', productResult.rowCount || 0);
+      const numericProductId = parseInt(productId);
+      console.log('🗑️ Converted to numeric ID:', numericProductId);
       
-      if (productResult.rowCount === 0) {
+      // Check if product exists first
+      console.log('🗑️ Checking if product exists...');
+      const existsResult = await query('SELECT id, name FROM products WHERE id = $1', [numericProductId]);
+      console.log('🗑️ Product exists query result:', existsResult.rows);
+      
+      if (!existsResult.rows || existsResult.rows.length === 0) {
+        console.error('❌ Product not found with ID:', numericProductId);
         return res.status(404).json({ error: 'Product not found' });
       }
       
-      console.log('✅ Complete product deletion successful for ID:', productId);
+      const productName = existsResult.rows[0].name;
+      console.log('🗑️ Found product:', productName);
+      
+      // First delete all ad_reads (analytics) associated with this product
+      console.log('🗑️ Deleting associated ad_reads...');
+      const adReadsResult = await query('DELETE FROM ad_reads WHERE product_id = $1', [numericProductId]);
+      console.log('🗑️ Deleted ad_reads:', adReadsResult.rowCount || 0);
+      
+      // Then delete the product itself
+      console.log('🗑️ Deleting product...');
+      const productResult = await query('DELETE FROM products WHERE id = $1', [numericProductId]);
+      console.log('🗑️ Deleted product rows:', productResult.rowCount || 0);
+      
+      if (productResult.rowCount === 0) {
+        console.error('❌ Product deletion failed - no rows affected');
+        return res.status(500).json({ error: 'Failed to delete product - database error' });
+      }
+      
+      console.log('✅ Complete product deletion successful for ID:', numericProductId);
       res.json({ 
         success: true, 
-        message: 'Product and all analytics data deleted successfully',
-        deletedAdReads: adReadsResult.rowCount || 0
+        message: `Product "${productName}" and all analytics data deleted successfully`,
+        deletedAdReads: adReadsResult.rowCount || 0,
+        productId: numericProductId,
+        productName: productName
       });
     } catch (error) {
       console.error('❌ Error during complete product deletion:', error);
+      console.error('❌ Error stack:', error.stack);
       console.error('❌ Product ID:', productId);
-      res.status(500).json({ error: 'Database error', details: error.message });
+      console.error('❌ Error type:', error.constructor.name);
+      res.status(500).json({ error: 'Database error', details: error.message, stack: error.stack });
     }
   } else {
     res.status(405).json({ error: 'Method not allowed' });
