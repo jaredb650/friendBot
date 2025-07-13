@@ -34,16 +34,10 @@ module.exports = async function handler(req, res) {
     console.log('🔐 Authenticating user...');
     authenticateToken(req);
     console.log('✅ Authentication successful');
-  } catch (error) {
-    console.log('❌ Initial setup failed:', error.message);
-    console.log('❌ Error stack:', error.stack);
-    return res.status(500).json({ error: error.message, details: 'Initial setup failed' });
-  }
 
-  const productId = req.query.id;
-  console.log('🛍️ Product ID from query:', productId, 'Type:', typeof productId);
+    const productId = req.query.id;
+    console.log('🛍️ Product ID from query:', productId, 'Type:', typeof productId);
 
-  try {
     if (req.method === 'PUT') {
       // Update product
       console.log('📝 PUT request received for product update');
@@ -84,9 +78,9 @@ module.exports = async function handler(req, res) {
       
       console.log('✅ Product updated successfully:', numericProductId);
       res.json({ success: true, productId: numericProductId });
-  } else if (req.method === 'DELETE') {
-    // Delete product and ALL associated analytics data
-    try {
+      
+    } else if (req.method === 'DELETE') {
+      // Delete product and ALL associated analytics data
       console.log('🗑️ Starting complete product deletion for ID:', productId);
       console.log('🗑️ ProductId type:', typeof productId);
       console.log('🗑️ ProductId isNaN:', isNaN(productId));
@@ -136,23 +130,19 @@ module.exports = async function handler(req, res) {
         productId: numericProductId,
         productName: productName
       });
-    } catch (error) {
-      console.error('❌ Error during complete product deletion:', error);
-      console.error('❌ Error stack:', error.stack);
-      console.error('❌ Product ID:', productId);
-      console.error('❌ Error type:', error.constructor.name);
-      res.status(500).json({ error: 'Database error', details: error.message, stack: error.stack });
+      
+    } else {
+      console.log('❌ Method not allowed:', req.method);
+      res.status(405).json({ error: 'Method not allowed' });
     }
-  } else {
-    console.log('❌ Method not allowed:', req.method);
-    res.status(405).json({ error: 'Method not allowed' });
+    
+  } catch (globalError) {
+    console.error('❌ Global error handler:', globalError);
+    console.error('❌ Global error stack:', globalError.stack);
+    res.status(500).json({ 
+      error: 'Internal server error', 
+      details: globalError.message,
+      stack: globalError.stack 
+    });
   }
-} catch (globalError) {
-  console.error('❌ Global error handler:', globalError);
-  console.error('❌ Global error stack:', globalError.stack);
-  res.status(500).json({ 
-    error: 'Internal server error', 
-    details: globalError.message,
-    stack: globalError.stack 
-  });
-}
+};
