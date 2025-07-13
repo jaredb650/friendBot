@@ -105,24 +105,46 @@ const ProductManager: React.FC = () => {
     const newStatus = !product.is_active;
     const action = newStatus ? 'activated' : 'deactivated';
     
+    console.log('📝 Frontend: Starting product status toggle for:', { 
+      productId: product.id, 
+      productName: product.name, 
+      currentStatus: product.is_active, 
+      newStatus 
+    });
+    
     try {
-      await axios.put(`/api/admin/products/${product.id}`, {
+      const url = `/api/admin/products/${product.id}`;
+      const payload = {
         name: product.name,
         description: product.description,
         payPerMention: product.pay_per_mention,
         isActive: newStatus
-      }, {
+      };
+      
+      console.log('📝 Frontend: Making PUT request to:', url);
+      console.log('📝 Frontend: With payload:', payload);
+      console.log('📝 Frontend: With token:', token ? 'Present' : 'Missing');
+      
+      const response = await axios.put(url, payload, {
         headers: { Authorization: `Bearer ${token}` }
       });
+      
+      console.log('✅ Frontend: Update response:', response.data);
       setMessage(`Product campaign ${action} successfully!`);
       setIsSuccess(true);
       fetchProducts();
-    } catch (error) {
-      setMessage(`Failed to ${newStatus ? 'activate' : 'deactivate'} product campaign.`);
+    } catch (error: any) {
+      console.error('❌ Frontend: Update error:', error);
+      console.error('❌ Frontend: Error response:', error.response?.data);
+      console.error('❌ Frontend: Error status:', error.response?.status);
+      console.error('❌ Frontend: Error message:', error.message);
+      
+      const errorMessage = error.response?.data?.error || error.response?.data?.details || error.message || 'Unknown error';
+      setMessage(`Failed to ${newStatus ? 'activate' : 'deactivate'} product campaign: ${errorMessage}`);
       setIsSuccess(false);
     }
 
-    setTimeout(() => setMessage(''), 3000);
+    setTimeout(() => setMessage(''), 5000);
   };
 
   const deleteProduct = async (id: number, productName: string) => {

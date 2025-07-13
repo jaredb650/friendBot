@@ -88,19 +88,51 @@ module.exports = async function handler(req, res) {
     }
   } else if (req.method === 'PUT') {
     // Update product
+    console.log('📝 PUT request received for product update');
+    console.log('📝 Extracted productId from URL:', productId);
+    console.log('📝 ProductId type:', typeof productId);
+    
     const { name, description, payPerMention, isActive } = req.body;
+    console.log('📝 Update payload:', { name, description, payPerMention, isActive });
+    
+    // Validate productId
+    if (!productId || isNaN(productId)) {
+      console.error('❌ Invalid product ID for update:', productId);
+      return res.status(400).json({ error: 'Invalid product ID' });
+    }
+    
+    const numericProductId = parseInt(productId);
+    console.log('📝 Converted to numeric ID:', numericProductId);
     
     try {
-      await query(
+      // Check if product exists first
+      const existsResult = await query('SELECT id FROM products WHERE id = $1', [numericProductId]);
+      if (!existsResult.rows || existsResult.rows.length === 0) {
+        console.error('❌ Product not found for update with ID:', numericProductId);
+        return res.status(404).json({ error: 'Product not found' });
+      }
+      
+      console.log('📝 Product exists, proceeding with update...');
+      
+      const updateResult = await query(
         'UPDATE products SET name = $1, description = $2, pay_per_mention = $3, is_active = $4 WHERE id = $5',
-        [name, description, payPerMention, isActive, productId]
+        [name, description, payPerMention, isActive, numericProductId]
       );
       
-      console.log('🛍️ Product updated:', productId);
-      res.json({ success: true });
+      console.log('📝 Update result rowCount:', updateResult.rowCount);
+      
+      if (updateResult.rowCount === 0) {
+        console.error('❌ Product update failed - no rows affected');
+        return res.status(500).json({ error: 'Failed to update product - database error' });
+      }
+      
+      console.log('✅ Product updated successfully:', numericProductId);
+      res.json({ success: true, productId: numericProductId });
     } catch (error) {
       console.error('❌ Error updating product:', error);
-      res.status(500).json({ error: 'Database error' });
+      console.error('❌ Error stack:', error.stack);
+      console.error('❌ Product ID:', productId);
+      res.status(500).json({ error: 'Database error', details: error.message });
     }
   } else if (req.method === 'DELETE') {
     // Delete product and ALL associated analytics data
