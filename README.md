@@ -6,6 +6,8 @@
 
 This project is my submission for the **Holberton PR 2024 Hackathon**. FriendBot showcases a unique blend of AI technology, humor, and practical business application through an innovative chat experience that satirizes modern product placement and influencer marketing.
 
+**🌐 Live Demo: [https://friend-bot-nine.vercel.app/](https://friend-bot-nine.vercel.app/)**
+
 ![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
 ![Node](https://img.shields.io/badge/node-%3E%3D18.0.0-green.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
