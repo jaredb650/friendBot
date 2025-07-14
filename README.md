@@ -2,6 +2,10 @@
 
 > A satirical chatbot that's your best friend... but really just wants to sell you stuff!
 
+## 🏆 Holberton PR 2024 Hackathon Submission
+
+This project is my submission for the **Holberton PR 2024 Hackathon**. FriendBot showcases a unique blend of AI technology, humor, and practical business application through an innovative chat experience that satirizes modern product placement and influencer marketing.
+
 ![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
 ![Node](https://img.shields.io/badge/node-%3E%3D18.0.0-green.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
@@ -287,4 +291,16 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-Made with ❤️ and lots of ☕ by [Jared](https://github.com/jaredb650)
+## 🎯 Hackathon Highlights
+
+**Innovation**: Combines AI chatbots with satirical humor to create an engaging user experience that comments on modern marketing tactics.
+
+**Technical Excellence**: Full-stack application featuring React, Node.js, PostgreSQL, and Google Gemini AI with complete admin dashboard and analytics.
+
+**User Experience**: Intuitive interface with real-time chat, comprehensive product management, and detailed performance analytics.
+
+**Deployment**: Production-ready application deployed on Vercel with serverless architecture and persistent database storage.
+
+---
+
+Made with ❤️ and lots of ☕ by [Jared](https://github.com/jaredb650) for Holberton PR 2024 Hackathon
