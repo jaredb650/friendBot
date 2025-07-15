@@ -10,7 +10,7 @@ This project is my submission for the **Holberton PR 2024 Hackathon**. FriendBot
 
 ## 🎥 Video Demo
 
-**Note**: A video demonstration is currently unavailable due to Google Gemini API service interruptions (HTTP 503 errors). The live demo may experience chat functionality issues while Google's servers are experiencing high load. Once the API service stabilizes, a proper video demonstration will be recorded showcasing the bot's conversational abilities and product placement humor.
+https://youtu.be/_YcD5YBMl6w
 
 ![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
 ![Node](https://img.shields.io/badge/node-%3E%3D18.0.0-green.svg)
