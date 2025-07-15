@@ -8,13 +8,13 @@
 
 3. **Create API Key**: Click "Create API key" button
 
-4. **Copy the Key**: Copy the generated API key (it will look like: `AIzaSyBxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx`)
+4. **Copy the Key**: Copy the generated API key
 
 5. **Add to Environment**: 
    - Open the `.env` file in the project root
    - Replace `your_gemini_api_key_here` with your actual API key:
    ```
-   GEMINI_API_KEY=AIzaSyBxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+   GEMINI_API_KEY=your_actual_api_key_here
    ```
 
 ## API Limits and Pricing
