@@ -4,9 +4,13 @@
 
 ## 🏆 Holberton PR 2024 Hackathon Submission
 
-This project is my submission for the **Holberton PR 2024 Hackathon**. FriendBot showcases a unique blend of AI technology, humor, and practical business application through an innovative chat experience that satirizes modern product placement and influencer marketing.
+This project is my submission for the **Holberton PR 2024 Hackathon**. FriendBot showcases a unique blend of AI technology, humor, and practical business application through an innovative chat experience that parodies modern product placement and influencer marketing.
 
 **🌐 Live Demo: [https://friend-bot-nine.vercel.app/](https://friend-bot-nine.vercel.app/)**
+
+## 🎥 Video Demo
+
+**Note**: A video demonstration is currently unavailable due to Google Gemini API service interruptions (HTTP 503 errors). The live demo may experience chat functionality issues while Google's servers are experiencing high load. Once the API service stabilizes, a proper video demonstration will be recorded showcasing the bot's conversational abilities and product placement humor.
 
 ![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
 ![Node](https://img.shields.io/badge/node-%3E%3D18.0.0-green.svg)
@@ -295,7 +299,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🎯 Hackathon Highlights
 
-**Innovation**: Combines AI chatbots with satirical humor to create an engaging user experience that comments on modern marketing tactics.
+**Innovation**: Combines AI chatbots with satirical humor to create an engaging user experience that parodies modern marketing tactics.
 
 **Technical Excellence**: Full-stack application featuring React, Node.js, PostgreSQL, and Google Gemini AI with complete admin dashboard and analytics.
 
